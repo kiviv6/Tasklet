@@ -44,9 +44,8 @@ int main(){
 
       case 97: // a 
       getyx(stdscr, y, x);
-      printw(create_input_box(y, x)); 
       wmove(tasks_win, 1, 1);
-      wprintw(tasks_win, "Test");
+      wprintw(tasks_win, create_input_box(y, x));
       box(tasks_win, 0, 0);
       mvwprintw(tasks_win, 0, 1, "PENDING TASKS");  
       wrefresh(tasks_win);
