@@ -20,7 +20,12 @@ int main(){
   getmaxyx(stdscr, row, col);
   mvprintw(row-1, 0, "Press q to quit");
   refresh();
-  move(row/2, col/2);
+  WINDOW *tasks_win = newwin(row/2, col, 0, 0);
+  box(tasks_win, 0, 0);
+  mvwprintw(tasks_win, 0, 1, "PENDING TASKS");  
+  wmove(tasks_win, 1, 1);
+  wrefresh(tasks_win);
+    move(row/2, col/2);
   while (ch!=113) {
     ch = getch();
     switch (ch) {
@@ -40,6 +45,12 @@ int main(){
       case 97: // a 
       getyx(stdscr, y, x);
       printw(create_input_box(y, x)); 
+      wmove(tasks_win, 1, 1);
+      wprintw(tasks_win, "Test");
+      box(tasks_win, 0, 0);
+      mvwprintw(tasks_win, 0, 1, "PENDING TASKS");  
+      wrefresh(tasks_win);
+      move(row/2, col/2);
       break;
     }
   }
