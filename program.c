@@ -1,6 +1,6 @@
 #include <ncurses.h>
 
-void create_input_box(int y, int x);
+const char *create_input_box(int y, int x);
 
 //----------------------------------------------------
 // Main function
@@ -39,7 +39,7 @@ int main(){
 
       case 97: // a 
       getyx(stdscr, y, x);
-      create_input_box(y, x);
+      printw(create_input_box(y, x)); 
       break;
     }
   }
@@ -55,11 +55,19 @@ int main(){
 // Input box function
 //----------------------------------------------------
 
-void create_input_box(int y, int x) {
-  WINDOW *local_win = newwin(3, 20, y-3, x-10);
-  box(local_win, 0, 0);
-  mvwprintw(local_win, 1, 1, "Hello");  
+const char *create_input_box(int y, int x) {
+  static char task[30];
+  WINDOW *input_box = newwin(3, 20, y-3, x-10);
+  box(input_box, 0, 0);
+  mvwprintw(input_box, 0, 1, "Name of task");  
   refresh();
-  wrefresh(local_win);  
-  delwin(local_win);
+  wmove(input_box, 1, 1);
+  wrefresh(input_box);  
+  echo();
+  wgetstr(input_box, task);
+  wclear(input_box);
+  wrefresh(input_box);
+  delwin(input_box);
+  noecho();
+  return task;
 }
