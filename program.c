@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <ncurses.h>
 
 const char *create_input_box(int y, int x);
+void complete_task(FILE *file, int t);
 
 //----------------------------------------------------
 // Main function
@@ -13,8 +15,9 @@ int main(){
   int ch=0;
   int x,y;
   int tasks_win_y=1;
+  int tasks_win_x=1;
   int print_y;
-  char tasks_string[1000];
+  char tasks_string[1024];
 
   initscr();
   start_color();
@@ -24,6 +27,7 @@ int main(){
   noecho();
   getmaxyx(stdscr, row, col);
   mvprintw(row-1, 0, "Press q to quit");
+  curs_set(0);
   refresh();
   
   FILE *taskfile;
@@ -32,7 +36,7 @@ int main(){
   fclose(taskfile);
   }
 
-  WINDOW *tasks_win = newwin(row/2, col, 0, 0);
+  WINDOW *tasks_win = newwin((row/2)+5, col, 0, 0);
   box(tasks_win, 0, 0);
   mvwprintw(tasks_win, 0, 1, "PENDING TASKS");  
   wmove(tasks_win, 1, 1);
@@ -42,9 +46,10 @@ int main(){
   // Main loop
   while (ch!=113) {
     // Updating the tasks_win
+    wclear(tasks_win);
     taskfile = fopen("tasks.txt", "r");
     print_y=1;
-    while (fgets(tasks_string, 1000, taskfile)) {
+    while (fgets(tasks_string, 1024, taskfile)) {
     wmove(tasks_win, print_y, 1);
     wprintw(tasks_win, tasks_string);
     print_y += 1;
@@ -52,7 +57,7 @@ int main(){
     fclose(taskfile);
     box(tasks_win, 0, 0);
     mvwprintw(tasks_win, 0, 1, "PENDING TASKS");  
-    mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_STANDOUT, 0, NULL);
+    mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_STANDOUT, 1, NULL);
     wrefresh(tasks_win);
     
     // Check for user input
@@ -81,6 +86,10 @@ int main(){
       fclose(taskfile);
       move(row/2, col/2);
       break;
+
+      case 100: // d
+      getyx(tasks_win, tasks_win_y, tasks_win_x);
+      complete_task(taskfile, tasks_win_y);
     }
   }
   endwin();
@@ -93,7 +102,7 @@ int main(){
 
 const char *create_input_box(int y, int x) {
   static char task[30];
-  WINDOW *input_box = newwin(3, 20, y-3, x-10);
+  WINDOW *input_box = newwin(3, 50, y-3, x-25);
   box(input_box, 0, 0);
   mvwprintw(input_box, 0, 1, "Name of task");  
   refresh();
@@ -106,4 +115,32 @@ const char *create_input_box(int y, int x) {
   delwin(input_box);
   noecho();
   return task;
+}
+
+//----------------------------------------------------
+// Complete task function
+//----------------------------------------------------
+
+void complete_task(FILE *file, int t) {
+  char buffer[2048];
+  int line=1;
+  FILE *temp;
+  file = fopen("tasks.txt", "r");
+  temp = fopen("temp_tasks.txt", "w");
+  if (file == NULL || temp == NULL) {
+    printf("Error opening file(s)\n");
+  }
+  
+  while (!feof(file)) {
+    fgets(buffer, 2048, file);
+    if (line != t && !feof(file)) {
+      fprintf(temp, "%s", buffer);
+    }
+    line += 1;
+  }
+
+  fclose(file);
+  fclose(temp);
+  remove("tasks.txt");
+  rename("temp_tasks.txt", "tasks.txt");
 }
