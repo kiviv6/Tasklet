@@ -6,6 +6,7 @@
 
 const char *create_input_box(int y, int x);
 void complete_task(FILE *file, int t);
+void create_help_box();
 
 //----------------------------------------------------
 // Main function
@@ -24,6 +25,7 @@ int main(){
   initscr();
   start_color();
   init_pair(1, COLOR_RED, COLOR_BLACK);
+  init_pair(2, COLOR_YELLOW, COLOR_BLACK);
   cbreak();
   keypad(stdscr, TRUE);
   noecho();
@@ -40,8 +42,8 @@ int main(){
 
   WINDOW *tasks_win = newwin((row/2)+5, col, 0, 0);
   box(tasks_win, 0, 0);
-  mvwprintw(tasks_win, 0, 1, "PENDING TASKS");  
-  wmove(tasks_win, 1, 1);
+  mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
+  wmove(tasks_win, 1, 2);
   wrefresh(tasks_win);
   move(row/2, col/2);
   
@@ -52,23 +54,24 @@ int main(){
     taskfile = fopen("tasks.txt", "r");
     print_y=1;
     while (fgets(tasks_string, 1024, taskfile)) {
-      wmove(tasks_win, print_y, 1);
+      wmove(tasks_win, print_y, 2);
       wprintw(tasks_win, tasks_string);
       print_y += 1;
     }
     fclose(taskfile);
     box(tasks_win, 0, 0);
-    mvwprintw(tasks_win, 0, 1, "PENDING TASKS");  
-    mvwprintw(tasks_win, 0, 16, "COMPLETED TASKS");
+    mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
+    mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
 
     if (strcmp(mode, "pending") == 0) {
-      mvwchgat(tasks_win, 0, 16, 15, A_DIM, 0, NULL);
-      mvwchgat(tasks_win, 0, 1, 13, A_STANDOUT | A_BOLD | A_UNDERLINE, 0, NULL);
+      mvwchgat(tasks_win, 0, 17, 15, A_DIM, 0, NULL);
+      mvwchgat(tasks_win, 0, 2, 13, A_STANDOUT | A_BOLD | A_UNDERLINE, 0, NULL);
           } else {
-      mvwchgat(tasks_win, 0, 16, 15, A_STANDOUT | A_BOLD | A_UNDERLINE, 0, NULL);
-      mvwchgat(tasks_win, 0, 1, 13, A_DIM, 0, NULL);
+      mvwchgat(tasks_win, 0, 17, 15, A_STANDOUT | A_BOLD | A_UNDERLINE, 0, NULL);
+      mvwchgat(tasks_win, 0, 2, 13, A_DIM, 0, NULL);
     }
     mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_STANDOUT | A_BOLD, 1, NULL);
+    curs_set(0);
     wrefresh(tasks_win);
 
     
@@ -110,6 +113,11 @@ int main(){
       case 100: // d
       getyx(tasks_win, tasks_win_y, tasks_win_x);
       complete_task(taskfile, tasks_win_y);
+      break;
+
+      case 104: // h
+      create_help_box();
+      break;
     }
   }
   endwin();
@@ -129,6 +137,7 @@ const char *create_input_box(int y, int x) {
   wmove(input_box, 1, 1);
   wrefresh(input_box);  
   echo();
+  curs_set(2);
   wgetstr(input_box, task);
   wclear(input_box);
   wrefresh(input_box);
@@ -163,4 +172,30 @@ void complete_task(FILE *file, int t) {
   fclose(temp);
   remove("tasks.txt");
   rename("temp_tasks.txt", "tasks.txt");
+}
+
+//----------------------------------------------------
+// Help box function
+//----------------------------------------------------
+
+void create_help_box() {
+  int row, col;
+  getmaxyx(stdscr, row, col);
+  WINDOW *help_box = newwin(2*(row/3), 2*(col/3), row/6, col/6);
+  box(help_box, 0, 0);
+  mvwprintw(help_box, 0, 2, "Tasklet - help");  
+  mvwprintw(help_box, 1, 2, "j: move down");
+  mvwprintw(help_box, 2, 2, "k: move up");
+  mvwprintw(help_box, 3, 2, "a: add new task");
+  mvwprintw(help_box, 4, 2, "d: mark selected task as done");
+  mvwprintw(help_box, 5, 2, "tab: switch between pending and completed tasks");
+  mvwprintw(help_box, 6, 2, "h: help");
+  mvwprintw(help_box, 7, 2, "q: quit");
+  refresh();
+  wmove(help_box, 1, 1);
+  wrefresh(help_box);
+  getch();
+  wclear(help_box);
+  wrefresh(help_box);
+  delwin(help_box);
 }
