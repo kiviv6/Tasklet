@@ -6,3 +6,4 @@ run:
 
 clean:
 	rm program
+	rm tasks.txt
