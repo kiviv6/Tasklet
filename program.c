@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ncurses.h>
 
 const char *create_input_box(int y, int x);
@@ -17,6 +18,7 @@ int main(){
   int tasks_win_y=1;
   int tasks_win_x=1;
   int print_y;
+  char mode[30]="pending";
   char tasks_string[1024];
 
   initscr();
@@ -50,15 +52,25 @@ int main(){
     taskfile = fopen("tasks.txt", "r");
     print_y=1;
     while (fgets(tasks_string, 1024, taskfile)) {
-    wmove(tasks_win, print_y, 1);
-    wprintw(tasks_win, tasks_string);
-    print_y += 1;
+      wmove(tasks_win, print_y, 1);
+      wprintw(tasks_win, tasks_string);
+      print_y += 1;
     }
     fclose(taskfile);
     box(tasks_win, 0, 0);
     mvwprintw(tasks_win, 0, 1, "PENDING TASKS");  
-    mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_STANDOUT, 1, NULL);
+    mvwprintw(tasks_win, 0, 16, "COMPLETED TASKS");
+
+    if (strcmp(mode, "pending") == 0) {
+      mvwchgat(tasks_win, 0, 16, 15, A_DIM, 0, NULL);
+      mvwchgat(tasks_win, 0, 1, 13, A_STANDOUT | A_BOLD | A_UNDERLINE, 0, NULL);
+          } else {
+      mvwchgat(tasks_win, 0, 16, 15, A_STANDOUT | A_BOLD | A_UNDERLINE, 0, NULL);
+      mvwchgat(tasks_win, 0, 1, 13, A_DIM, 0, NULL);
+    }
+    mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_STANDOUT | A_BOLD, 1, NULL);
     wrefresh(tasks_win);
+
     
     // Check for user input
     ch = getch();
@@ -76,6 +88,14 @@ int main(){
       break;
 
       case 113: // q 
+      break;
+
+      case 9: // tab key
+      if (strcmp(mode, "pending") == 0) {
+          strcpy(mode, "completed");
+        } else {
+        strcpy(mode, "pending");
+      }
       break;
 
       case 97: // a 
