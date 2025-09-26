@@ -4,9 +4,12 @@
 #include <string.h>
 #include <ncurses.h>
 
+#define rgb(x) ((int)((float)x*3.90625))
+
 const char *create_input_box(int y, int x);
-void complete_task(FILE *file, int t);
+void complete_task(FILE *file, FILE *done, int t);
 void create_help_box();
+void clear_done();
 
 //----------------------------------------------------
 // Main function
@@ -23,9 +26,19 @@ int main(){
   char tasks_string[1024];
 
   initscr();
+  //COLORS
   start_color();
-  init_pair(1, COLOR_RED, COLOR_BLACK);
+  init_color(COLOR_BLACK, rgb(25), rgb(23), rgb(36));
+  init_color(COLOR_WHITE, rgb(224), rgb(222), rgb(244));
+  init_color(COLOR_MAGENTA, rgb(235), rgb(188), rgb(186));
+  init_color(COLOR_YELLOW, rgb(246), rgb(193), rgb(119));
+  short color_muted = COLOR_WHITE + 1;
+  init_color(color_muted, rgb(110), rgb(106), rgb(134));
+  init_pair(1, COLOR_MAGENTA, COLOR_BLACK);
   init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+  init_pair(3, COLOR_RED, COLOR_BLACK);
+  init_pair(4, color_muted, COLOR_BLACK);
+
   cbreak();
   keypad(stdscr, TRUE);
   noecho();
@@ -40,6 +53,12 @@ int main(){
   fclose(taskfile);
   }
 
+  FILE *donefile;
+  if (access("done_tasks.txt", F_OK) != 0) {
+  donefile = fopen("done_tasks.txt", "w");
+  fclose(donefile);
+  }
+
   WINDOW *tasks_win = newwin((row/2)+5, col, 0, 0);
   box(tasks_win, 0, 0);
   mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
@@ -51,14 +70,28 @@ int main(){
   while (ch!=113) {
     // Updating the tasks_win
     wclear(tasks_win);
-    taskfile = fopen("tasks.txt", "r");
-    print_y=1;
-    while (fgets(tasks_string, 1024, taskfile)) {
-      wmove(tasks_win, print_y, 2);
-      wprintw(tasks_win, tasks_string);
-      print_y += 1;
+    if (strcmp(mode, "pending") == 0) {
+      taskfile = fopen("tasks.txt", "r");
+      print_y=1;
+      wattroff(tasks_win, COLOR_PAIR(4));
+      while (fgets(tasks_string, 1024, taskfile)) {
+        wmove(tasks_win, print_y, 2);
+        wprintw(tasks_win, tasks_string);
+        print_y += 1;
+      }
+      fclose(taskfile);
+    } else {
+      donefile = fopen("done_tasks.txt", "r");
+      print_y=1;
+      wattron(tasks_win, COLOR_PAIR(4));
+      while (fgets(tasks_string, 1024, donefile)) {
+        wmove(tasks_win, print_y, 2);
+        wprintw(tasks_win, tasks_string);
+        print_y += 1;
+      }
+      fclose(donefile);
     }
-    fclose(taskfile);
+
     box(tasks_win, 0, 0);
     mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
     mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
@@ -112,11 +145,15 @@ int main(){
 
       case 100: // d
       getyx(tasks_win, tasks_win_y, tasks_win_x);
-      complete_task(taskfile, tasks_win_y);
+      complete_task(taskfile, donefile, tasks_win_y);
       break;
 
       case 104: // h
       create_help_box();
+      break;
+
+      case 120: //x
+      clear_done();
       break;
     }
   }
@@ -150,12 +187,13 @@ const char *create_input_box(int y, int x) {
 // Complete task function
 //----------------------------------------------------
 
-void complete_task(FILE *file, int t) {
+void complete_task(FILE *file, FILE *done, int t) {
   char buffer[2048];
   int line=1;
   FILE *temp;
   file = fopen("tasks.txt", "r");
   temp = fopen("temp_tasks.txt", "w");
+  done = fopen("done_tasks.txt", "a");
   if (file == NULL || temp == NULL) {
     printf("Error opening file(s)\n");
   }
@@ -164,12 +202,15 @@ void complete_task(FILE *file, int t) {
     fgets(buffer, 2048, file);
     if (line != t && !feof(file)) {
       fprintf(temp, "%s", buffer);
+    } else if (line == t && !feof(file)) {
+      fprintf(done, "%s", buffer);
     }
     line += 1;
   }
 
   fclose(file);
   fclose(temp);
+  fclose(done);
   remove("tasks.txt");
   rename("temp_tasks.txt", "tasks.txt");
 }
@@ -189,8 +230,9 @@ void create_help_box() {
   mvwprintw(help_box, 3, 2, "a: add new task");
   mvwprintw(help_box, 4, 2, "d: mark selected task as done");
   mvwprintw(help_box, 5, 2, "tab: switch between pending and completed tasks");
-  mvwprintw(help_box, 6, 2, "h: help");
-  mvwprintw(help_box, 7, 2, "q: quit");
+  mvwprintw(help_box, 6, 2, "x: clear all completed tasks");
+  mvwprintw(help_box, 7, 2, "h: help");
+  mvwprintw(help_box, 8, 2, "q: quit");
   refresh();
   wmove(help_box, 1, 1);
   wrefresh(help_box);
@@ -198,4 +240,16 @@ void create_help_box() {
   wclear(help_box);
   wrefresh(help_box);
   delwin(help_box);
+}
+
+//----------------------------------------------------
+// Help box function
+//----------------------------------------------------
+
+void clear_done() {
+  FILE *temp;
+  temp = fopen("temp_done_tasks.txt", "w");
+  fclose(temp);
+  remove("done_tasks.txt");
+  rename("temp_done_tasks.txt", "done_tasks.txt");
 }
