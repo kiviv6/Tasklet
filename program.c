@@ -70,40 +70,41 @@ int main(){
   while (ch!=113) {
     // Updating the tasks_win
     wclear(tasks_win);
+    
     if (strcmp(mode, "pending") == 0) {
       taskfile = fopen("tasks.txt", "r");
       print_y=1;
-      wattroff(tasks_win, COLOR_PAIR(4));
+      wattrset(tasks_win, COLOR_PAIR(0));
+      box(tasks_win, 0, 0);
+      mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
+      mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
       while (fgets(tasks_string, 1024, taskfile)) {
         wmove(tasks_win, print_y, 2);
         wprintw(tasks_win, tasks_string);
         print_y += 1;
       }
       fclose(taskfile);
+      mvwchgat(tasks_win, 0, 17, 15, A_DIM, 0, NULL);
+      mvwchgat(tasks_win, 0, 2, 13, A_STANDOUT | A_BOLD | A_UNDERLINE, 0, NULL);
+      mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_STANDOUT | A_BOLD, 1, NULL);
     } else {
       donefile = fopen("done_tasks.txt", "r");
       print_y=1;
-      wattron(tasks_win, COLOR_PAIR(4));
+      wattrset(tasks_win, COLOR_PAIR(4));
+      box(tasks_win, 0, 0);
+      mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
+      mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
       while (fgets(tasks_string, 1024, donefile)) {
         wmove(tasks_win, print_y, 2);
         wprintw(tasks_win, tasks_string);
         print_y += 1;
       }
       fclose(donefile);
-    }
-
-    box(tasks_win, 0, 0);
-    mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
-    mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
-
-    if (strcmp(mode, "pending") == 0) {
-      mvwchgat(tasks_win, 0, 17, 15, A_DIM, 0, NULL);
-      mvwchgat(tasks_win, 0, 2, 13, A_STANDOUT | A_BOLD | A_UNDERLINE, 0, NULL);
-          } else {
       mvwchgat(tasks_win, 0, 17, 15, A_STANDOUT | A_BOLD | A_UNDERLINE, 0, NULL);
       mvwchgat(tasks_win, 0, 2, 13, A_DIM, 0, NULL);
+      mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_STANDOUT | A_BOLD, 4, NULL);
     }
-    mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_STANDOUT | A_BOLD, 1, NULL);
+    
     curs_set(0);
     wrefresh(tasks_win);
 
