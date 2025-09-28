@@ -33,11 +33,19 @@ int main(){
   init_color(COLOR_MAGENTA, rgb(235), rgb(188), rgb(186));
   init_color(COLOR_YELLOW, rgb(246), rgb(193), rgb(119));
   short color_muted = COLOR_WHITE + 1;
+  short color_surface = COLOR_WHITE + 2;
+  short color_overlay = COLOR_WHITE + 3;
+  short color_highlight = COLOR_WHITE + 4;
   init_color(color_muted, rgb(110), rgb(106), rgb(134));
-  init_pair(1, COLOR_MAGENTA, COLOR_BLACK);
+  init_color(color_surface, rgb(31), rgb(29), rgb(46));
+  init_color(color_overlay, rgb(38), rgb(35), rgb(58));
+  init_color(color_highlight, rgb(82), rgb(86), rgb(110));
+  init_pair(1, COLOR_WHITE, color_highlight);
   init_pair(2, COLOR_YELLOW, COLOR_BLACK);
   init_pair(3, COLOR_RED, COLOR_BLACK);
-  init_pair(4, color_muted, COLOR_BLACK);
+  init_pair(4, color_muted, color_surface);
+  init_pair(5, COLOR_WHITE, color_surface);
+  init_pair(6, COLOR_WHITE, color_overlay);
 
   cbreak();
   keypad(stdscr, TRUE);
@@ -60,10 +68,10 @@ int main(){
   }
 
   WINDOW *tasks_win = newwin((row/2)+5, col, 0, 0);
-  box(tasks_win, 0, 0);
-  mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
-  wmove(tasks_win, 1, 2);
-  wrefresh(tasks_win);
+  //box(tasks_win, 0, 0);
+  //mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
+  //wmove(tasks_win, 1, 2);
+  //wrefresh(tasks_win);
   move(row/2, col/2);
   
   // Main loop
@@ -74,32 +82,34 @@ int main(){
     if (strcmp(mode, "pending") == 0) {
       taskfile = fopen("tasks.txt", "r");
       print_y=1;
-      wattrset(tasks_win, COLOR_PAIR(0));
-      box(tasks_win, 0, 0);
-      mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
-      mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
-      while (fgets(tasks_string, 1024, taskfile)) {
+      wattrset(tasks_win, COLOR_PAIR(5));
+      wbkgd(tasks_win, COLOR_PAIR(5));
+            while (fgets(tasks_string, 1024, taskfile)) {
         wmove(tasks_win, print_y, 2);
         wprintw(tasks_win, tasks_string);
         print_y += 1;
       }
       fclose(taskfile);
+      box(tasks_win, 0, 0);
+      mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
+      mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
       mvwchgat(tasks_win, 0, 17, 15, A_DIM, 0, NULL);
       mvwchgat(tasks_win, 0, 2, 13, A_STANDOUT | A_BOLD | A_UNDERLINE, 0, NULL);
-      mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_STANDOUT | A_BOLD, 1, NULL);
+      mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_BOLD, 1, NULL);
     } else {
       donefile = fopen("done_tasks.txt", "r");
       print_y=1;
       wattrset(tasks_win, COLOR_PAIR(4));
-      box(tasks_win, 0, 0);
-      mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
-      mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
-      while (fgets(tasks_string, 1024, donefile)) {
+      wbkgd(tasks_win, COLOR_PAIR(4));
+            while (fgets(tasks_string, 1024, donefile)) {
         wmove(tasks_win, print_y, 2);
         wprintw(tasks_win, tasks_string);
         print_y += 1;
       }
       fclose(donefile);
+      box(tasks_win, 0, 0);
+      mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
+      mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
       mvwchgat(tasks_win, 0, 17, 15, A_STANDOUT | A_BOLD | A_UNDERLINE, 0, NULL);
       mvwchgat(tasks_win, 0, 2, 13, A_DIM, 0, NULL);
       mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_STANDOUT | A_BOLD, 4, NULL);
@@ -151,6 +161,8 @@ int main(){
 
       case 104: // h
       create_help_box();
+      bkgd(COLOR_PAIR(0));
+      refresh();
       break;
 
       case 120: //x
@@ -169,6 +181,7 @@ int main(){
 const char *create_input_box(int y, int x) {
   static char task[30];
   WINDOW *input_box = newwin(3, 50, y-3, x-25);
+  wbkgd(input_box, COLOR_PAIR(6));
   box(input_box, 0, 0);
   mvwprintw(input_box, 0, 1, "Name of task");  
   refresh();
@@ -224,6 +237,7 @@ void create_help_box() {
   int row, col;
   getmaxyx(stdscr, row, col);
   WINDOW *help_box = newwin(2*(row/3), 2*(col/3), row/6, col/6);
+  wbkgd(help_box, COLOR_PAIR(6));
   box(help_box, 0, 0);
   mvwprintw(help_box, 0, 2, "Tasklet - help");  
   mvwprintw(help_box, 1, 2, "j: move down");
@@ -244,7 +258,7 @@ void create_help_box() {
 }
 
 //----------------------------------------------------
-// Help box function
+// Clear tasks function
 //----------------------------------------------------
 
 void clear_done() {
@@ -254,3 +268,8 @@ void clear_done() {
   remove("done_tasks.txt");
   rename("temp_done_tasks.txt", "done_tasks.txt");
 }
+
+//----------------------------------------------------
+// Warning box function
+//----------------------------------------------------
+
