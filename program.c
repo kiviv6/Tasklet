@@ -51,7 +51,7 @@ int main(){
   keypad(stdscr, TRUE);
   noecho();
   getmaxyx(stdscr, row, col);
-  mvprintw(row-1, 0, "Press q to quit");
+  mvprintw(row-1, 0, "Press h for help and q to quit");
   curs_set(0);
   refresh();
   
@@ -68,10 +68,6 @@ int main(){
   }
 
   WINDOW *tasks_win = newwin((row/2)+5, col, 0, 0);
-  //box(tasks_win, 0, 0);
-  //mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
-  //wmove(tasks_win, 1, 2);
-  //wrefresh(tasks_win);
   move(row/2, col/2);
   
   // Main loop
@@ -93,8 +89,8 @@ int main(){
       box(tasks_win, 0, 0);
       mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
       mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
-      mvwchgat(tasks_win, 0, 17, 15, A_DIM, 0, NULL);
-      mvwchgat(tasks_win, 0, 2, 13, A_STANDOUT | A_BOLD | A_UNDERLINE, 0, NULL);
+      mvwchgat(tasks_win, 0, 17, 15, A_DIM, 5, NULL);
+      mvwchgat(tasks_win, 0, 2, 13, A_STANDOUT | A_BOLD | A_UNDERLINE, 5, NULL);
       mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_BOLD, 1, NULL);
     } else {
       donefile = fopen("done_tasks.txt", "r");
@@ -110,8 +106,8 @@ int main(){
       box(tasks_win, 0, 0);
       mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
       mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
-      mvwchgat(tasks_win, 0, 17, 15, A_STANDOUT | A_BOLD | A_UNDERLINE, 0, NULL);
-      mvwchgat(tasks_win, 0, 2, 13, A_DIM, 0, NULL);
+      mvwchgat(tasks_win, 0, 17, 15, A_STANDOUT | A_BOLD | A_UNDERLINE, 5, NULL);
+      mvwchgat(tasks_win, 0, 2, 13, A_DIM, 5, NULL);
       mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_STANDOUT | A_BOLD, 4, NULL);
     }
     

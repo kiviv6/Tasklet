@@ -7,3 +7,4 @@ run:
 clean:
 	rm program
 	rm tasks.txt
+	rm done_tasks.txt
