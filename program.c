@@ -20,7 +20,6 @@ int main(){
   int ch=0;
   int x,y;
   int tasks_win_y=1;
-  int tasks_win_x=1;
   int print_y;
   char mode[30]="pending";
   char tasks_string[1024];
@@ -82,7 +81,7 @@ int main(){
       wbkgd(tasks_win, COLOR_PAIR(5));
             while (fgets(tasks_string, 1024, taskfile)) {
         wmove(tasks_win, print_y, 2);
-        wprintw(tasks_win, tasks_string);
+        wprintw(tasks_win, "%s", tasks_string);
         print_y += 1;
       }
       fclose(taskfile);
@@ -99,7 +98,7 @@ int main(){
       wbkgd(tasks_win, COLOR_PAIR(4));
             while (fgets(tasks_string, 1024, donefile)) {
         wmove(tasks_win, print_y, 2);
-        wprintw(tasks_win, tasks_string);
+        wprintw(tasks_win, "%s", tasks_string);
         print_y += 1;
       }
       fclose(donefile);
@@ -151,7 +150,7 @@ int main(){
       break;
 
       case 100: // d
-      getyx(tasks_win, tasks_win_y, tasks_win_x);
+      getyx(tasks_win, tasks_win_y, x);
       complete_task(taskfile, donefile, tasks_win_y);
       break;
 
