@@ -21,6 +21,7 @@ int main(){
   int x,y;
   int tasks_win_y=1;
   int print_y;
+  int task_count=0;
   char mode[30]="pending";
   char tasks_string[1024];
 
@@ -71,6 +72,8 @@ int main(){
   
   // Main loop
   while (ch!=113) {
+    //Updating stdscr
+    
     // Updating the tasks_win
     wclear(tasks_win);
     
@@ -79,15 +82,18 @@ int main(){
       print_y=1;
       wattrset(tasks_win, COLOR_PAIR(5));
       wbkgd(tasks_win, COLOR_PAIR(5));
-            while (fgets(tasks_string, 1024, taskfile)) {
+      task_count=0;
+      while (fgets(tasks_string, 1024, taskfile)) {
         wmove(tasks_win, print_y, 2);
         wprintw(tasks_win, "%s", tasks_string);
         print_y += 1;
+        task_count +=1;
       }
       fclose(taskfile);
       box(tasks_win, 0, 0);
       mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
       mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
+      mvwprintw(tasks_win, 2*(row/3)-2, 2, "Pending tasks: %d", task_count);
       mvwchgat(tasks_win, 0, 17, 15, A_DIM, 5, NULL);
       mvwchgat(tasks_win, 0, 2, 13, A_STANDOUT | A_BOLD | A_UNDERLINE, 5, NULL);
       mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_BOLD, 1, NULL);
@@ -96,19 +102,23 @@ int main(){
       print_y=1;
       wattrset(tasks_win, COLOR_PAIR(4));
       wbkgd(tasks_win, COLOR_PAIR(4));
-            while (fgets(tasks_string, 1024, donefile)) {
+      task_count = 0;
+      while (fgets(tasks_string, 1024, donefile)) {
         wmove(tasks_win, print_y, 2);
         wprintw(tasks_win, "%s", tasks_string);
         print_y += 1;
+        task_count += 1;
       }
       fclose(donefile);
       box(tasks_win, 0, 0);
       mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
       mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
+      mvwprintw(tasks_win, 2*(row/3)-2, 2, "Completed tasks: %d", task_count);
       mvwchgat(tasks_win, 0, 17, 15, A_STANDOUT | A_BOLD | A_UNDERLINE, 5, NULL);
       mvwchgat(tasks_win, 0, 2, 13, A_DIM, 5, NULL);
       mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_STANDOUT | A_BOLD, 4, NULL);
     }
+
     
     curs_set(0);
     wrefresh(tasks_win);
@@ -141,10 +151,10 @@ int main(){
       break;
 
       case 97: // a 
-      getyx(stdscr, y, x);
+      getmaxyx(stdscr, y, x);
       wmove(tasks_win, 1, 1);
       taskfile = fopen("tasks.txt", "a");
-      fprintf(taskfile, "%s\n", create_input_box(y, x));
+      fprintf(taskfile, "%s\n", create_input_box(y/2, x/2));
       fclose(taskfile);
       move(row/2, col/2);
       break;
