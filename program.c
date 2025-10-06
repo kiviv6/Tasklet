@@ -128,15 +128,15 @@ int main(){
     ch = getch();
     switch (ch) {
       case 106: // j 
-      //getyx(stdscr, y, x);
-      //move(y+1, x);
-      tasks_win_y += 1;
+      if (tasks_win_y < task_count) {
+        tasks_win_y += 1;
+      }
       break;
 
       case 107: // k 
-      //getyx(stdscr, y, x);
-      //move(y-1, x);
-      tasks_win_y -= 1;
+      if (tasks_win_y > 1) {
+        tasks_win_y -= 1;
+      }
       break;
 
       case 113: // q 
@@ -160,8 +160,14 @@ int main(){
       break;
 
       case 100: // d
-      getyx(tasks_win, tasks_win_y, x);
-      complete_task(taskfile, donefile, tasks_win_y);
+      if (strcmp(mode, "pending") == 0) {
+        getyx(tasks_win, tasks_win_y, x);
+        complete_task(taskfile, donefile, tasks_win_y);
+        if (tasks_win_y == task_count && task_count != 1) {
+            tasks_win_y -= 1;
+        }
+      }
+      
       break;
 
       case 104: // h
