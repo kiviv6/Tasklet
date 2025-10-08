@@ -93,10 +93,15 @@ int main(){
       box(tasks_win, 0, 0);
       mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
       mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
-      mvwprintw(tasks_win, 2*(row/3)-2, 2, "Pending tasks: %d", task_count);
+      mvwprintw(tasks_win, (row/2)+4, 2, "Pending tasks: %d", task_count);
       mvwchgat(tasks_win, 0, 17, 15, A_DIM, 5, NULL);
       mvwchgat(tasks_win, 0, 2, 13, A_STANDOUT | A_BOLD | A_UNDERLINE, 5, NULL);
-      mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_BOLD, 1, NULL);
+      if (task_count > 0) {
+        mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_BOLD, 1, NULL);
+      } else {
+        mvwprintw(tasks_win, 2, 2, "No pending tasks :)");
+        mvwchgat(tasks_win, 2, 2, 19, A_BOLD, 4, NULL);
+      }
     } else {
       donefile = fopen("done_tasks.txt", "r");
       print_y=1;
@@ -113,7 +118,7 @@ int main(){
       box(tasks_win, 0, 0);
       mvwprintw(tasks_win, 0, 2, "PENDING TASKS");  
       mvwprintw(tasks_win, 0, 17, "COMPLETED TASKS");
-      mvwprintw(tasks_win, 2*(row/3)-2, 2, "Completed tasks: %d", task_count);
+      mvwprintw(tasks_win, (row/2)+4, 2, "Completed tasks: %d", task_count);
       mvwchgat(tasks_win, 0, 17, 15, A_STANDOUT | A_BOLD | A_UNDERLINE, 5, NULL);
       mvwchgat(tasks_win, 0, 2, 13, A_DIM, 5, NULL);
       mvwchgat(tasks_win, tasks_win_y, 1, col-2, A_STANDOUT | A_BOLD, 4, NULL);
@@ -148,6 +153,7 @@ int main(){
         } else {
         strcpy(mode, "pending");
       }
+      tasks_win_y=1;
       break;
 
       case 97: // a 
@@ -167,7 +173,6 @@ int main(){
             tasks_win_y -= 1;
         }
       }
-      
       break;
 
       case 104: // h
